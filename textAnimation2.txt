@@ -1,0 +1,136 @@
+'use client';
+
+import { useEffect, useRef } from 'react';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+// SplitText کو manually register کریں (trial version کے لیے)
+let SplitText;
+try {
+  SplitText = require('gsap/SplitText').SplitText;
+} catch (e) {
+  // Fallback agar SplitText available na ho
+  SplitText = class {
+    constructor(target, vars) {
+      this.chars = [];
+      this.words = [];
+      this.lines = [];
+      
+      const element = typeof target === 'string' 
+        ? document.querySelector(target) 
+        : target;
+      
+      if (element && vars.type === 'chars') {
+        const text = element.textContent;
+        element.innerHTML = '';
+        text.split('').forEach((char, i) => {
+          const span = document.createElement('span');
+          span.textContent = char === ' ' ? '\u00A0' : char;
+          span.className = 'char';
+          element.appendChild(span);
+          this.chars.push(span);
+        });
+      }
+      
+      this.revert = () => {
+        // Cleanup
+      };
+    }
+  };
+}
+
+gsap.registerPlugin(SplitText, ScrollTrigger);
+
+export default function Home() {
+  const textRef = useRef(null);
+
+  useEffect(() => {
+    if (!textRef.current) return;
+
+    const mySplitText = new SplitText(textRef.current, { 
+      type: "chars" 
+    });
+    
+    const chars = mySplitText.chars;
+
+    gsap.from(chars, {
+      yPercent: 80,
+      stagger: 0.02,
+      ease: "back.out",
+      duration: 0.5,
+      scrollTrigger: {
+        trigger: textRef.current,
+        start: "top 20%",
+        markers: true, // Remove in production
+      },
+    });
+
+    return () => {
+      mySplitText.revert();
+    };
+  }, []);
+
+  return (
+    <main style={{
+      minHeight: '100vh',
+      backgroundColor: '#000',
+      color: '#fff',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: '2rem',
+    }}>
+      <div>
+        <h1 
+          ref={textRef} 
+          style={{
+            fontSize: 'clamp(2rem, 5vw, 4rem)',
+            fontWeight: 'bold',
+            textAlign: 'center',
+            lineHeight: 1.2,
+            overflow: 'hidden',
+            marginTop: '50%',
+          }}
+          className="split-text"
+        >
+          Welcome to Next.js with GSAP Animation
+        </h1>
+        
+        <p style={{
+          textAlign: 'center',
+          marginTop: '2rem',
+          opacity: 0.7,
+        }}>
+          Scroll down to see the animation
+        </p>
+
+        {/* Extra space for scrolling */}
+        <div style={{ height: '100vh' }}></div>
+        
+        <h2 style={{ textAlign: 'center', fontSize: '2rem' }}>
+          More Content Here
+        </h2>
+        
+        <div style={{ height: '100vh' }}></div>
+      </div>
+
+      <style jsx global>{`
+        .char {
+          display: inline-block;
+          will-change: transform;
+        }
+        
+        .split-line {
+          overflow: hidden;
+          display: block;
+        }
+        
+        * {
+          margin: 0;
+          padding: 0;
+          box-sizing: border-box;
+        }
+      `}</style>
+    </main>
+  );
+}
