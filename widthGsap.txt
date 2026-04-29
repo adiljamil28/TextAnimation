@@ -1,0 +1,56 @@
+'use client';
+
+import { useRef, useEffect } from 'react';
+import { gsap } from 'gsap';
+import { ScrollTrigger } from 'gsapScrollTrigger';
+
+ Plugin register karna zaroori hai
+gsap.registerPlugin(ScrollTrigger);
+
+export default function ScrollWidthBox() {
+  const containerRef = useRef(null);
+  const boxRef = useRef(null);
+
+  useEffect(() = {
+     gsap.context React ke Strict Mode ko handle karta hai & cleanup easy banata hai
+    const ctx = gsap.context(() = {
+      gsap.fromTo(boxRef.current, {
+        width '0%',
+      }, {
+        width '100%',
+                   duration 3,      Animation duration (optional, scrub ke saath use nahi hota)
+          ease 'power2.out',    Linear animation (optional)
+        scrollTrigger {
+          trigger containerRef.current,
+          start 'top 90%',     Jab container ka top viewport ke 80% pe aaye
+          end 'top 50%',   Jab container ka bottom viewport ke 20% pe aaye
+          scrub true,         Scroll ke saath animate hoga (playpause nahi)
+           markers true,    Debugging ke liye uncomment karein
+        },
+      });
+    }, containerRef);  Scope containerRef tak limit karein
+
+     Cleanup Component unmount hone par ScrollTrigger remove ho jayega
+    return () = ctx.revert();
+  }, []);
+
+  return (
+    div style={{ height '250vh', background '#f9fafb' }}
+      { Upar ka khali area taake scroll ho sake }
+      div style={{ height '100vh', display 'flex', alignItems 'center', justifyContent 'center' }}
+        p style={{ color '#6b7280' }}⬇️ Scroll down to animate the boxp
+      div
+
+      { Animation Container }
+      div ref={containerRef} style={{ width '80%', margin '0 auto', background '#e5e7eb' }}
+        div
+          ref={boxRef}
+          style={{ height '60px', backgroundColor '#3b82f6', width '0%' }}
+        
+      div
+
+      { Neeche ka khali area taake scroll continue rahe }
+      div style={{ height '100vh' }} 
+    div
+  );
+}
